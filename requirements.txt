@@ -1,0 +1,2 @@
+aioblescan==0.2.14
+asyncio==3.4.3
