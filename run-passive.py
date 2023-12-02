@@ -2,24 +2,30 @@ import asyncio
 import json
 import aioblescan as aiobs
 from aioblescan.plugins import ATCMiThermometer
+import redis
+import os
+from datetime import datetime
+redis_host = os.environ.get("REDIS_HOST", "localhost")
+redis_port = 6379
+redis_db = 0
 
-# global
-opts = None
-decoders = []
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, charset='utf-8', decode_responses=True)
+
 
 def my_process(data):
     ev = aiobs.HCI_Event()
     xx = ev.decode(data)
-    
     xx = ATCMiThermometer().decode(ev)
     if xx:       
+        
+        redis_client.sadd("bluetooth_sensors", xx['mac address'])
+        xx['time'] = datetime.now().timestamp()
         print(f"Thermo {json.dumps(xx)}")
+        redis_client.hset(xx['mac address'], mapping=xx)
        
  
 
 async def amain(args=None):
-    global opts
-
     event_loop = asyncio.get_running_loop()
 
     # First create and configure a raw socket
