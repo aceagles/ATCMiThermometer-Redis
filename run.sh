@@ -1,0 +1,1 @@
+nohup sudo ../venv/ble_scan/bin/python ./run-passive.py &
